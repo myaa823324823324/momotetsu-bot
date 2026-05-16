@@ -180,7 +180,7 @@ async def leaderboard(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed)
 
 # ⭕ 変更後（このように書き換えてください）
-    TOKEN = os.environ.get(DISCORD_BOT_TOKEN)
+    TOKEN = os.environ.get('DISCORD_BOT_TOKEN')
 
 # サーバーを24時間維持するためのダミーWebサーバー
 app = Flask('')
