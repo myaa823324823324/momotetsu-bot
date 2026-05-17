@@ -86,7 +86,7 @@ async def report(
     位4: discord.Member, ゴール4: int
 ):
     # 重複チェック
-    players = [位1, 位2, 位3, 位4]
+    players = [1位, 2位, 3位, 4位]
     if len(set(players)) < 4:
         await interaction.response.send_message("❌ エラー: プレイヤーが重複しています。4人全員別の人を指定してください。", ephemeral=True)
         return
