@@ -91,17 +91,17 @@ async def report(
         await interaction.response.send_message("❌ エラー: プレイヤーが重複しています。4人全員別の人を指定してください。", ephemeral=True)
         return
 
-    # ゴール数の上限キャップ（1人最大3回までルール）
-    g1 = min(max(0, ゴール1), 3)
-    g2 = min(max(0, ゴール2), 3)
-    g3 = min(max(0, ゴール3), 3)
-    g4 = min(max(0, ゴール4), 3)
+    # ゴール数の上限キャップ
+    g1 = min(max(0, ゴール1), 20)
+    g2 = min(max(0, ゴール2), 20)
+    g3 = min(max(0, ゴール3), 20)
+    g4 = min(max(0, ゴール4), 20)
     
     # 総ゴール数の計算
     total_goals = g1 + g2 + g3 + g4
     
     # 基本の順位ポイント
-    base_points = [30, 10, -10, -30]
+    base_points = [60, 20, -20, -60]
     
     # ゼロサム計算ロジック：最終スコア ＝ 基本順位pt － 総ゴール数 ＋ (自分のゴール数 × 4)
     score1 = base_points[0] - total_goals + (g1 * 4)
