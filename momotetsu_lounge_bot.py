@@ -197,3 +197,65 @@ def run_web():
 # バックグラウンドでWebサーバーを起動
 threading.Thread(target=run_web).start()
 bot.run(TOKEN)
+# --------------------------------------------------
+# 新機能①：【全員用】指定したメンバーのレートを表示する
+# --------------------------------------------------
+@bot.tree.command(name="rate", description="指定したメンバーのレートを確認します")
+@app_commands.describe(member="レートを確認したいメンバー")
+async def view_member_rate(interaction: discord.Interaction, member: discord.Member):
+    user_id = str(member.id)
+    
+    # データの読み込み（既存の関数がある場合はそれを利用、なければ簡易読み込み）
+    # ※既存のボットのデータ保存形式に合わせて調整が必要な場合があります
+    data = load_data() 
+    
+    if user_id in data:
+        current_rate = data[user_id].get('rate', 1500) # 初期値1500
+        await interaction.response.send_message(
+            f"📊 **{member.display_name}** さんの現在のレートは **{current_rate}** です！", 
+            ephemeral=False # 全員に見えるように表示
+        )
+    else:
+        await interaction.response.send_message(
+            f"🔍 {member.display_name} さんのレートデータはまだ登録されていません。（初期値: 1500）", 
+            ephemeral=False
+        )
+
+# --------------------------------------------------
+# 新機能②：【管理者限定】全員のレートランキングを表示する
+# --------------------------------------------------
+@bot.tree.command(name="ranking", description="【管理者専用】全体のレートランキングを表示します")
+async def view_ranking(interaction: discord.Interaction):
+    # コマンドを実行した人が「サーバー管理権限」を持っているかチェック
+    if not interaction.user.guild_permissions.administrator:
+        await interaction.response.send_message(
+            "❌ このコマンドはサーバーの管理者しか使用できません。", 
+            ephemeral=True # エラーは本人にだけこっそり見せる
+        )
+        return
+
+    data = load_data()
+    if not data:
+        await interaction.response.send_message("📭 まだ登録されているデータがありません。", ephemeral=True)
+        return
+
+    # レートが高い順に並び替え
+    sorted_data = sorted(data.items(), key=lambda x: x[1].get('rate', 1500), reverse=True)
+    
+    rank_text = "🏆 **桃鉄ラウンジ レートランキング** 🏆\n"
+    rank_text += "----------------------------------------\n"
+    
+    for i, (u_id, u_data) in enumerate(sorted_data, 1):
+        # サーバー内から名前を探す（見つからなければ保存された名前）
+        member = interaction.guild.get_member(int(u_id))
+        name = member.display_name if member else u_data.get('name', '不明なプレイヤー')
+        rate = u_data.get('rate', 1500)
+        
+        rank_text += f"{i}位: **{name}** ({rate})\n"
+        
+        # 人数が多すぎる場合は15人で区切る（Discordの文字数制限対策）
+        if i >= 15:
+            rank_text += "...以降省略..."
+            break
+
+    await interaction.response.send_message(rank_text, ephemeral=True) # 管理者だけにこっそり表示
