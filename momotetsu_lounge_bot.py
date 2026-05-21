@@ -115,7 +115,7 @@ async def result(
         
         # ⭐ Kami8さんの完全ゼロサム対応 新・桃鉄イロレーティング数式
         change = base_points[i] + 2*(4 * my_goals - total_goals) + ((avg_rate - my_rate) / 20)
-        change = roundup(change, 1) # 小数点第1位までに丸める
+        change = round(change, 1) # 小数点第1位までに丸める
         
         rate_changes.append(change)
         
