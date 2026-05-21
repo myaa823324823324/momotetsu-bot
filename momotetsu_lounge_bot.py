@@ -307,7 +307,7 @@ async def on_ready():
 if __name__ == "__main__":
     threading.Thread(target=run_flask, daemon=True).start()
     
-    TOKEN = os.environ.get("DISCORD_TOKEN")
+    TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
     if TOKEN:
         bot.run(TOKEN)
     else:
