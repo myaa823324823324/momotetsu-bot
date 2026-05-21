@@ -144,7 +144,7 @@ async def result(
     embed = discord.Embed(title=f"🎲 桃鉄対戦結果 (試合ID: {match_id})", color=0x3498db)
     embed.description = f"**部屋の平均レート:** {round(avg_rate, 1)}\n**総ゴール数:** {total_goals}回"
     
-    medals = ["🥇 1位", "🥈 2位", "🥉 3位", "😌 4位"]
+    medals = ["🥇 1位", "🥈 2位", "🥉 3位", "💀 4位"]
     for i in range(4):
         sign = "+" if rate_changes[i] >= 0 else ""
         embed.add_field(
