@@ -304,10 +304,16 @@ async def cancel_match(interaction: discord.Interaction):
 async def on_ready():
     print(f"ログインしました: {bot.user.name}")
 
-if __name__ == "__main__":
+Flask（Webサーバー）をバックグラウンドで動かすための関数
+def start_flask():
     threading.Thread(target=run_flask, daemon=True).start()
-    
-    TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
+
+if name == "main":
+    # 先にFlaskを裏で起動
+    start_flask()
+
+その後、即座にDiscordボットを起動
+    TOKEN = os.environ.get("DISCORD_TOKEN")
     if TOKEN:
         bot.run(TOKEN)
     else:
