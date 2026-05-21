@@ -304,7 +304,7 @@ async def cancel_match(interaction: discord.Interaction):
 async def on_ready():
     print(f"ログインしました: {bot.user.name}")
 
-Flask（Webサーバー）をバックグラウンドで動かすための関数
+Flask(Webサーバー)をバックグラウンドで動かすための関数
 def start_flask():
     threading.Thread(target=run_flask, daemon=True).start()
 
