@@ -304,15 +304,12 @@ async def cancel_match(interaction: discord.Interaction):
 async def on_ready():
     print(f"ログインしました: {bot.user.name}")
 
-Flask config
 def start_flask():
     threading.Thread(target=run_flask, daemon=True).start()
 
 if name == "main":
-    # start Web Server
     start_flask()
 
-start Discord Bot
     TOKEN = os.environ.get("DISCORD_TOKEN")
     if TOKEN:
         bot.run(TOKEN)
