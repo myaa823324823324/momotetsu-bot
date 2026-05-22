@@ -38,12 +38,11 @@ class MomotetsuBot(commands.Bot):
 bot = MomotetsuBot()
 
 # ==========================================
-# 2. データの読み書きシステム（より確実に改良）
+# 2. データの読み書きシステム
 # ==========================================
 DATA_FILE = "momotetsu_data.json"
 
 def load_data():
-    """データを確実にファイルから読み込む"""
     if os.path.exists(DATA_FILE):
         try:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
@@ -55,12 +54,11 @@ def load_data():
     return {"players": {}, "matches": []}
 
 def save_data(data):
-    """データを確実にファイルへ書き込む"""
     try:
         with open(DATA_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
             f.flush()
-            os.fsync(f.fileno()) # ディスクに完全に書き込みを強制
+            os.fsync(f.fileno())
     except Exception as e:
         print(f"データ保存エラー: {e}")
 
@@ -87,13 +85,12 @@ async def result(
         await interaction.response.send_message("❌ このコマンドは管理者しか使用できません。", ephemeral=True)
         return
 
-    # 最新データを読み込み
     data = load_data()
     
     players = [p1, p2, p3, p4]
     goals = [p1_goals, p2_goals, p3_goals, p4_goals]
     total_goals = sum(goals)
-    base_points = [60, 20, -20, -60]
+    base_points = [30, 10, -10, -30]
     
     old_rates = []
     for p in players:
@@ -111,8 +108,7 @@ async def result(
         my_rate = old_rates[i]
         my_goals = goals[i]
         
-        # レート計算（四捨五入）
-        change = base_points[i] + 2*(4 * my_goals - total_goals) + ((avg_rate - my_rate) / 20)
+        change = base_points[i] + (4 * my_goals - total_goals) + ((avg_rate - my_rate) / 20)
         change = round(change, 1)
         rate_changes.append(change)
         
@@ -129,12 +125,13 @@ async def result(
             {"id": str(p1.id), "name": p1.display_name, "change": rate_changes[0], "goals": p1_goals, "rank": 1},
             {"id": str(p2.id), "name": p2.display_name, "change": rate_changes[1], "goals": p2_goals, "rank": 2},
             {"id": str(p3.id), "name": p3.display_name, "change": rate_changes[2], "goals": p3_goals, "rank": 3},
-            {"id": str(p4.id), "name": p4.display_name, "change": rate_changes[3], "goals": p4_goals, "rank": 4}
+            {"id": str(p4.id), "name": p4.display_name, "change": rate_changes[3], "goals": p4_changes if 'p4_changes' in locals() else rate_changes[3], "goals": p4_goals, "rank": 4} # rate_changes[3]に修正
         ]
     }
-    data["matches"].append(match_record)
+    # 上記の行の複雑な表記を整えた確実な形がこちらです
+    match_record["details"][3]["change"] = rate_changes[3]
     
-    # データを即座に保存
+    data["matches"].append(match_record)
     save_data(data)
 
     embed = discord.Embed(title=f"🎲 桃鉄対戦結果 (試合ID: {match_id})", color=0x3498db)
@@ -159,7 +156,6 @@ async def rate(interaction: discord.Interaction, member: discord.Member = None):
     target = member or interaction.user
     user_id = str(target.id)
     
-    # コマンド実行時に最新データをロード
     data = load_data()
 
     if user_id not in data["players"] or len(data["players"][user_id]["history"]) <= 1:
@@ -187,7 +183,7 @@ async def rate(interaction: discord.Interaction, member: discord.Member = None):
 
     plt.figure(figsize=(6, 3.5))
     plt.plot(history, marker='o', color='#3498db', linewidth=2, markersize=5)
-    plt.title(f"Rate History", fontsize=12) # タイトルの文字化けを防ぐため固定文字に
+    plt.title(f"Rate History", fontsize=12)
     plt.xlabel("Matches", fontsize=10)
     plt.ylabel("Rating", fontsize=10)
     plt.grid(True, linestyle='--', alpha=0.6)
@@ -212,7 +208,6 @@ async def rate(interaction: discord.Interaction, member: discord.Member = None):
 # ----- コマンド③：レートランキング表 -----
 @bot.tree.command(name="ranking", description="サーバー全体のレートランキングを表示します")
 async def ranking(interaction: discord.Interaction):
-    # 最新データをロード
     data = load_data()
     
     if not data["players"]:
@@ -244,7 +239,7 @@ class CancelSelect(discord.ui.Select):
             summary = f"ID:{m['match_id']} | 1位:{details[0]['name']} 2位:{details[1]['name']}"
             options.append(discord.SelectOption(label=summary, description=f"登録日時: {m['date']}", value=str(m["match_id"])))
             
-        super().__init__(placeholder="取り消したい試合を選択してください...", min_values=1, max_values=1, options=options)
+        super().__init__(placeholder="取り消いたい試合を選択してください...", min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
         if not interaction.user.guild_permissions.administrator:
@@ -297,6 +292,7 @@ async def cancel_match(interaction: discord.Interaction):
     view = CancelView(data["matches"])
     await interaction.response.send_message("🔄 **試合結果の取り消しメニュー**\n以下のリストから削除したい試合を選んでください。", view=view, ephemeral=True)
 
+
 # ==========================================
 # 4. ボットの起動処理
 # ==========================================
@@ -307,11 +303,11 @@ async def on_ready():
 def start_flask():
     threading.Thread(target=run_flask, daemon=True).start()
 
-if name == "main":
+if __name__ == "__main__":
     start_flask()
-
-    TOKEN = os.environ.get("DISCORD_TOKEN")
+    
+    TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
     if TOKEN:
         bot.run(TOKEN)
     else:
-        print("Error: DISCORD_TOKEN not found.")
+        print("Error: DISCORD_BOT_TOKEN not found.")
