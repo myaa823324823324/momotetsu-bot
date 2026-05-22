@@ -304,17 +304,17 @@ async def cancel_match(interaction: discord.Interaction):
 async def on_ready():
     print(f"ログインしました: {bot.user.name}")
 
-Flask(Webサーバー)をバックグラウンドで動かすための関数
+Flask config
 def start_flask():
     threading.Thread(target=run_flask, daemon=True).start()
 
 if name == "main":
-    # 先にFlaskを裏で起動
+    # start Web Server
     start_flask()
 
-その後、即座にDiscordボットを起動
+start Discord Bot
     TOKEN = os.environ.get("DISCORD_TOKEN")
     if TOKEN:
         bot.run(TOKEN)
     else:
-        print("エラー: DISCORD_TOKEN が環境変数に設定されていません。")
+        print("Error: DISCORD_TOKEN not found.")
